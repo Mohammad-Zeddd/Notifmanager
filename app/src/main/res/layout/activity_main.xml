@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:fitsSystemWindows="true"
-    android:padding="24dp">
+    android:padding="16dp">
 
     <TextView
         android:id="@+id/statusText"
@@ -15,16 +15,45 @@
         android:textStyle="bold" />
 
     <TextView
+        android:id="@+id/disclosureText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:text="This test app reads notification metadata from other apps once you grant access in Settings. It logs only the app name and basic flags, never the message text." />
+        android:layout_marginTop="8dp"
+        android:text="To build your inbox, this app needs notification access. It stores the app name, the time, and a short preview of each notification (codes like OTPs are masked) on this phone only. Nothing is sent anywhere. You can revoke access or clear the history at any time." />
 
-    <Button
-        android:id="@+id/openSettingsButton"
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/openSettingsButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Notification access" />
+
+        <Button
+            android:id="@+id/clearHistoryButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="Clear history" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/emptyText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
-        android:text="Open notification access settings" />
+        android:text="No notifications stored yet. New ones will appear here."
+        android:visibility="gone" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="12dp"
+        android:layout_weight="1" />
 
 </LinearLayout>
