@@ -5,22 +5,28 @@ import android.service.notification.StatusBarNotification
 import com.example.notifmanager.data.NotificationEntity
 
 /**
- * Decides what is allowed to be stored, and in what form.
- * Rules: skip our own, ongoing and group-summary notifications; keep short previews only;
- * mask digit runs when the text looks like an OTP or password message.
+ * Decides what is stored, and in what form.
+ * Rules: skip our own, ongoing, group-summary and "live" notifications (media, calls,
+ * navigation, progress, alarms); keep short previews only.
+ * Text is stored as written (no masking). The database is private to this app.
  */
 object NotificationSanitizer {
 
     private const val MAX_TITLE = 100
     private const val MAX_TEXT = 200
-    private const val MASK = "••••"
 
-    private val SENSITIVE_HINT = Regex(
-        "otp|one[- ]time|verification|passcode|password|\\bcode\\b|\\bpin\\b",
-        RegexOption.IGNORE_CASE
-    )
-    private val DIGIT_RUN = Regex("\\b\\d{4,8}\\b")
     private val WHITESPACE = Regex("\\s+")
+
+    // "Live" notifications belong in the notification bar, not in the shelf or inbox.
+    // A media notification is ongoing while playing, but becomes dismissible when paused,
+    // which is why it used to slip through the ongoing check.
+    private val LIVE_CATEGORIES = setOf(
+        Notification.CATEGORY_TRANSPORT,
+        Notification.CATEGORY_CALL,
+        Notification.CATEGORY_NAVIGATION,
+        Notification.CATEGORY_PROGRESS,
+        Notification.CATEGORY_ALARM
+    )
 
     /** Returns a record to store, or null if this notification should not be stored. */
     fun toRecord(
@@ -35,26 +41,28 @@ object NotificationSanitizer {
         // Group summary rows duplicate the real notification, so skip them.
         if ((n.flags and Notification.FLAG_GROUP_SUMMARY) != 0) return null
 
+        val category = n.category
+        if (category != null && category in LIVE_CATEGORIES) return null
+
         val extras = n.extras
+        // Media-style notifications carry a media session token.
+        if (extras.containsKey(Notification.EXTRA_MEDIA_SESSION)) return null
+
         val title = extras.getCharSequence(Notification.EXTRA_TITLE)?.toString().orEmpty()
         val text = extras.getCharSequence(Notification.EXTRA_TEXT)?.toString().orEmpty()
         if (title.isBlank() && text.isBlank()) return null
-
-        val sensitive = SENSITIVE_HINT.containsMatchIn(title) || SENSITIVE_HINT.containsMatchIn(text)
 
         return NotificationEntity(
             dedupeKey = "${sbn.key}|${sbn.postTime}",
             sbnKey = sbn.key,
             sourcePackage = sbn.packageName,
             appLabel = appLabel,
-            titleSnippet = clean(title, sensitive, MAX_TITLE),
-            textSnippet = clean(text, sensitive, MAX_TEXT),
+            titleSnippet = clean(title, MAX_TITLE),
+            textSnippet = clean(text, MAX_TEXT),
             postedAt = sbn.postTime
         )
     }
 
-    private fun clean(raw: String, sensitive: Boolean, maxLength: Int): String {
-        val masked = if (sensitive) DIGIT_RUN.replace(raw, MASK) else raw
-        return masked.replace(WHITESPACE, " ").trim().take(maxLength)
-    }
+    private fun clean(raw: String, maxLength: Int): String =
+        raw.replace(WHITESPACE, " ").trim().take(maxLength)
 }

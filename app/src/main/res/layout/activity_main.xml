@@ -19,7 +19,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:text="To build your inbox, this app needs notification access. It stores the app name, the time, and a short preview of each notification (codes like OTPs are masked) on this phone only. Nothing is sent anywhere. You can revoke access or clear the history at any time." />
+        android:text="To build your inbox and shelf, this app needs notification access. It stores the app name, the time, and a short preview of each notification on this phone only. Nothing is sent anywhere. You can revoke access or clear the history at any time." />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -40,6 +40,13 @@
             android:layout_marginStart="8dp"
             android:text="Clear history" />
     </LinearLayout>
+
+    <Button
+        android:id="@+id/shelfToggleButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="Shelf: ON" />
 
     <TextView
         android:id="@+id/emptyText"
