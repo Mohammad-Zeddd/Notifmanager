@@ -1,4 +1,4 @@
-# Notifmanager
+# Notifmanager (In Development)
 
 An Android proof of concept for viewing selected notification previews in a local inbox.
 
